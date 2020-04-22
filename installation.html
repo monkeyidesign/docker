@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+Installing Docker Toolbox on Windows with Hyper-V Installed
+28 Apr 2016
+Installing Docker on Windows is a fairly simple and straightforward process. It is very well documented here. However if you have Hyper-V installed as I do, the instructions will not work right out of the box. If you try to start the Docker Quickstart Terminal, you'll get the following error message:
+
+Running pre-create checks...
+Error with pre-create check: "Hyper-V is installed. VirtualBox won't boot a 64bits VM when Hyper-V is activated. If it's installed but deactivated, you can use --virtualbox-no-vtx-check to try anyways"
+Looks like something went wrong in step ´Checking if machine default exists´
+The issue is that when you run the terminal the very first time, the startup script attempts to create the default virtual machine in which the docker containers will run. This step of the process fails if you have Hyper-V installed, even if it is disabled. In my case, I do have it installed but I have a boot option set up to disable it when I am not using it. This post describes how to change the Docker startup script to allow you to create the default virtual machine using the startup script and still keep Hyper-V installed.
+
+Before you start with the installation of Docker, I would suggest disabling Hyper-V. If you don't know how to do this, follow these instructions. Once you have disabled Hyper-V, the first step is to install Docker using the installer for Windows. The installation should run without any issues before you proceed with the next steps.
+
+Once you have installed Docker, we'll modify the startup file to allow it to create the default VM. The file we want to modify is located under C:\Program Files\Docker Toolbox and is called called start.sh. To modify the file you'll have to open the file in an editor running as Administrator. If you don't open an elevated editor, you won't be able to save your changes.
+
+It's now time to edit the file, but before you do so, you may want to save a copy of the original file. Just in case. In your editor, locate the following code snippet:
+<pre>
+STEP="Checking if machine $VM exists"
+if [ $VMEXISTSCODE -eq 1 ]; then
+"${DOCKERMACHINE}" rm -f "${VM}" &> /dev/null || :
+rm -rf ~/.docker/machine/machines/"${VM}"
+#set proxy variables if they exists
+if [ -n ${HTTPPROXY+x} ]; then
+PROXYENV="$PROXYENV --engine-env HTTPPROXY=$HTTPPROXY"
+fi
+if [ -n ${HTTPSPROXY+x} ]; then
+PROXYENV="$PROXYENV --engine-env HTTPSPROXY=$HTTPSPROXY"
+fi
+if [ -n ${NOPROXY+x} ]; then
+PROXYENV="$PROXYENV --engine-env NOPROXY=$NOPROXY"
+fi
+
+"${DOCKERMACHINE}" create -d virtualbox $PROXYENV "${VM}"
+fi
+The second to last line is where the vm is created:
+"${DOCKERMACHINE}" create -d virtualbox $PROXYENV "${VM}"
+You will need to modify that line and add the --virtualbox-no-vtx-check switch to. The end result is that the line will look like this:
+
+"${DOCKERMACHINE}" create -d virtualbox --virtualbox-no-vtx-check $PROXYENV "${VM}"
+Save your changes and now you should be able to run the quickstart terminal without any issues.
+
+    </pre>
+</body>
+</html>
