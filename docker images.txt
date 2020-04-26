@@ -1,0 +1,15 @@
+- docker images --help
+- docker pull images
+- docker images
+- docker images -q : show image id
+- docker images -f "dangling=false" : filter
+- docker images -f "dangling=false" -q
+
+- docker run images : docker run ubuntu, docker ps -a for viewing container
+- docker rmi images
+- docker rmi -f images
+
+set name of container image: docker run --name MyLinux -it ubuntu bash
+
+
+- docker inspect
